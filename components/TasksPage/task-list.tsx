@@ -1,22 +1,40 @@
 "use client";
+import { createClient } from "@/lib/supabase/client";
 import { useState } from "react";
 import Task from "@/components/TasksPage/task";
-import TaskAdder from "./task-adder";
-interface TaskListProps extends React.HTMLAttributes<HTMLDivElement> {}
+import TaskAdder from "@/components/TasksPage/task-adder";
+interface TaskListProps extends React.HTMLAttributes<HTMLDivElement> {
+  storedTasks: Task[];
+  owner: string;
+}
 
 type Task = {
   id: string;
   desc: string;
+  is_completed: boolean;
+  order_index?: number;
 };
 
-export default function TaskList({ className }: TaskListProps) {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const handleAddTask = (desc: string) => {
+export default function TaskList({
+  className,
+  storedTasks,
+  owner,
+}: TaskListProps) {
+  const [tasks, setTasks] = useState<Task[]>(storedTasks);
+  const supabase = createClient();
+
+  const handleAddTask = async (desc: string) => {
     const newTask = {
       id: crypto.randomUUID(),
       desc: desc,
+      is_completed: false,
+      order_index: 0,
     };
-    setTasks([...tasks, newTask]);
+
+    const { error } = await supabase.from("Daily_Tasks").insert(newTask);
+    if (!error) {
+      setTasks([...tasks, newTask]);
+    }
   };
 
   return (
