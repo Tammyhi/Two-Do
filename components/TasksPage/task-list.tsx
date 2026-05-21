@@ -13,6 +13,7 @@ type Task = {
   desc: string;
   is_completed: boolean;
   order_index?: number;
+  user_id?: string;
 };
 
 export default function TaskList({
@@ -25,15 +26,15 @@ export default function TaskList({
 
   const handleAddTask = async (desc: string) => {
     const newTask = {
-      id: crypto.randomUUID(),
       desc: desc,
       is_completed: false,
       order_index: 0,
+      user_id: 'TAMMY'
     };
 
-    const { error } = await supabase.from("Daily_Tasks").insert(newTask);
-    if (!error) {
-      setTasks([...tasks, newTask]);
+    const { data: newDBTask, error } = await supabase.from("Daily_Tasks").insert(newTask).select().single();
+    if (!error && newDBTask) {
+      setTasks([...tasks, newDBTask]);
     }
   };
 
